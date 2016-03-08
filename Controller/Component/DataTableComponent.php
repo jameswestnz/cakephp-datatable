@@ -108,10 +108,10 @@ class DataTableComponent extends Component{
         // @todo avoid multiple queries for finding count, maybe look into "SQL CALC FOUND ROWS"
         // get full count
         $this->model->recursive = -1;
-        $total = $this->model->find('count');
+        $parameters = $this->controller->paginate;
+        $total = $this->model->find('count', array_merge($parameters, array('limit' => null)));
         $this->setTimes('Count All','stop');
         $this->setTimes('Filtered Count','start','Counts records that match conditions');
-        $parameters = $this->controller->paginate;
         
         if($isFiltered){
             $filteredTotal = $this->model->find('count',$parameters);
