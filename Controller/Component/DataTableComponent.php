@@ -93,9 +93,13 @@ class DataTableComponent extends Component{
             }
         }
         
+        
         // check for WHERE statement in GET request
-        // need to check for sSearch AND sSearch_x vars
-        if(isset($httpGet) && !empty($httpGet['sSearch'])){
+        $search = array_filter($httpGet, function($key) {
+		    return strpos($key, 'sSearch') === 0;
+		}, ARRAY_FILTER_USE_KEY);
+		
+        if(isset($httpGet) && strlen(implode($search, '')) > 0){
             $conditions = $this->getWhereConditions();
 
             $this->controller->paginate = array_merge_recursive($this->controller->paginate, array('conditions'=>array('AND'=>$conditions)));

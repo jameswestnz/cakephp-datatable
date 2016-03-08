@@ -14,7 +14,7 @@ Features
 
 Dependancies
 ------
-* PHP 5.x
+* PHP 5.6+
 * CakePHP 2.x
 * LinkableBehavior is recommended but not required
 
