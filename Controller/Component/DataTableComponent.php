@@ -163,7 +163,6 @@ class DataTableComponent extends Component{
  * @return string
  */
     private function getOrderByStatements(){
-        
         if( !isset($this->controller->paginate['fields']) && !empty($this->controller->paginate['contain']) && empty($this->fields) ){
             throw new Exception("Missing field and/or contain option in Paginate. Please set the fields so I know what to order by.");
         }
@@ -194,29 +193,42 @@ class DataTableComponent extends Component{
  * @return array
  */
     private function getWhereConditions(){
-        
         if( !isset($this->controller->paginate['fields']) && empty($this->fields) ){
             throw new Exception("Field list is not set. Please set the fields so I know how to build where statement.");
         }
-        
-        $conditions = array();
-        
 
         for($i=0;$i<$this->controller->request->query['iColumns'];$i++){
             if(!isset($this->controller->request->query['bSearchable_'.$i]) || $this->controller->request->query['bSearchable_'.$i] == true){
                 $fields[] = $this->controller->request->query['mDataProp_'.$i];
             }
         }
+        $sSearch = array();
+        $sSearch_x = array();
 
         foreach($fields as $x => $column){
-            
             // only create conditions on bSearchable fields
             if( $this->controller->request->query['bSearchable_'.$x] == 'true' ){
-                $conditions['OR'][] = array(
-                    $this->controller->request->query['mDataProp_'.$x].' LIKE' => '%'.$this->controller->request->query['sSearch'].'%'
-                );
+	            
+	            // process sSearch
+	            if(!empty($this->controller->request->query['sSearch'])) {
+	                $sSearch['OR'][] = array(
+	                    $this->controller->request->query['mDataProp_'.$x].' LIKE' => '%'.$this->controller->request->query['sSearch'].'%'
+	                ); 
+	            }
+                
+                //then sSearch_x
+	            if(!empty($this->controller->request->query['sSearch_'.$x])) {
+	                $sSearch_x['OR'][] = array(
+	                    $this->controller->request->query['mDataProp_'.$x].' LIKE' => '%'.$this->controller->request->query['sSearch_'.$x].'%'
+	                ); 
+	            }
             }
         }
+        
+        $conditions = array();
+        if(!empty($sSearch)) $conditions[] = $sSearch;
+        if(!empty($sSearch_x)) $conditions[] = $sSearch_x;
+        
         return $conditions;
     }
     
