@@ -218,7 +218,7 @@ class DataTableComponent extends Component{
                 
                 //then sSearch_x
 	            if(!empty($this->controller->request->query['sSearch_'.$x])) {
-	                $sSearch_x['OR'][] = array(
+	                $sSearch_x[] = array(
 	                    $this->controller->request->query['mDataProp_'.$x].' LIKE' => '%'.$this->controller->request->query['sSearch_'.$x].'%'
 	                ); 
 	            }
