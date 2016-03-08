@@ -34,7 +34,6 @@ class DataTableComponent extends Component{
     public $conditionsByValidate = 0;
     public $emptyElements = 0;
     public $fields = array();
-    public $mDataProp = false;
     
     public function __construct(){
         
@@ -150,16 +149,7 @@ class DataTableComponent extends Component{
         }
         else{
             foreach($data as $i){
-                if($this->mDataProp == true){
-                    $response['aaData'][] = $i;
-                }
-                else{
-                    $tmp = $this->getDataRecursively($i);
-                    if($this->emptyElements > 0){
-                        $tmp = array_pad($tmp,count($tmp)+$this->emptyElements,'');
-                    }
-                    $response['aaData'][] = array_values($tmp);
-                }
+            	$response['aaData'][] = $i;
             }
         }
         $this->setTimes('Response','stop');
@@ -184,15 +174,9 @@ class DataTableComponent extends Component{
         // loop through sorting columbns in GET
         //for ( $i=0 ; $i<intval( $this->controller->request->query['iSortingCols'] ) ; $i++ ){
             // if column is found in paginate fields list then add to $orderBy
-            if( $this->mDataProp == true ){
-                $direction = $this->controller->request->query['sSortDir_0'] === 'asc' ? 'asc' : 'desc';
-                $mDataProp = $this->controller->request->query['iSortCol_0'];
-                $orderBy = $this->controller->request->query['mDataProp_'.$mDataProp].' '.$direction.', ';
-            }
-            else if( !empty($fields) && isset($this->controller->request->query['iSortCol_0']) ){
-                $direction = $this->controller->request->query['sSortDir_0'] === 'asc' ? 'asc' : 'desc';
-                $orderBy = $fields[ $this->controller->request->query['iSortCol_0'] ].' '.$direction.', ';
-            }
+            $direction = $this->controller->request->query['sSortDir_0'] === 'asc' ? 'asc' : 'desc';
+            $mDataProp = $this->controller->request->query['iSortCol_0'];
+            $orderBy = $this->controller->request->query['mDataProp_'.$mDataProp].' '.$direction.', ';
         //}
         
         if(!empty($orderBy)){
@@ -210,64 +194,26 @@ class DataTableComponent extends Component{
  */
     private function getWhereConditions(){
         
-        if( $this->mDataProp == false && !isset($this->controller->paginate['fields']) && empty($this->fields) ){
+        if( !isset($this->controller->paginate['fields']) && empty($this->fields) ){
             throw new Exception("Field list is not set. Please set the fields so I know how to build where statement.");
         }
         
         $conditions = array();
         
 
-        if($this->mDataProp == true){
-            for($i=0;$i<$this->controller->request->query['iColumns'];$i++){
-                if(!isset($this->controller->request->query['bSearchable_'.$i]) || $this->controller->request->query['bSearchable_'.$i] == true){
-                    $fields[] = $this->controller->request->query['mDataProp_'.$i];
-                }
+        for($i=0;$i<$this->controller->request->query['iColumns'];$i++){
+            if(!isset($this->controller->request->query['bSearchable_'.$i]) || $this->controller->request->query['bSearchable_'.$i] == true){
+                $fields[] = $this->controller->request->query['mDataProp_'.$i];
             }
-        }
-        else if(!empty($this->fields) || !empty($this->controller->paginate['fields']) ){
-            $fields = !empty($this->fields) ? $this->fields : $this->controller->paginate['fields'];
         }
 
         foreach($fields as $x => $column){
             
             // only create conditions on bSearchable fields
             if( $this->controller->request->query['bSearchable_'.$x] == 'true' ){
-                
-                if($this->mDataProp == true){
-                    $conditions['OR'][] = array(
-                        $this->controller->request->query['mDataProp_'.$x].' LIKE' => '%'.$this->controller->request->query['sSearch'].'%'
-                    );                  
-                }
-                else{
-
-                    list($table, $field) = explode('.', $column);
-
-                    // attempt using definitions in $model->validate to build intelligent conditions
-                    if( $this->conditionsByValidate == 1 && array_key_exists($column,$this->model->validate) ){
-
-                        if( !empty($this->controller->paginate['contain']) ){
-                            if(array_key_exists($table, $this->controller->paginate['contain']) && in_array($field, $this->controller->paginate['contain'][$table]['fields'])){
-                                $conditions[$table]['conditions'][] = $this->conditionByDataType($column);
-                            }
-                        }
-                        else{
-                            $conditions['OR'][] = $this->conditionByDataType($column);
-                        }
-                    }
-                    else{
-
-                        if( !empty($this->controller->paginate['contain']) ){
-                            if(array_key_exists($table, $this->controller->paginate['contain']) && in_array($field, $this->controller->paginate['contain'][$table]['fields'])){
-                                $conditions[$table]['conditions'][] = $column.' LIKE "%'.$this->controller->request->query['sSearch'].'%"';
-                            }
-                        }
-                        else{
-                            $conditions['OR'][] = array(
-                                $column.' LIKE' => '%'.$this->controller->request->query['sSearch'].'%'
-                            );
-                        }
-                    }
-                }
+                $conditions['OR'][] = array(
+                    $this->controller->request->query['mDataProp_'.$x].' LIKE' => '%'.$this->controller->request->query['sSearch'].'%'
+                );
             }
         }
         return $conditions;
