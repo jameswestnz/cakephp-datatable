@@ -74,12 +74,6 @@ class DataTableComponent extends Component{
         }
 
         $conditions = isset($this->controller->paginate['conditions']) ? $this->controller->paginate['conditions'] : null;
-
-        $isFiltered = false;
-        
-        if( !empty($conditions) ){
-            $isFiltered = true;
-        }
         
         if(isset($this->controller->request->query)){
             $httpGet = $this->controller->request->query;
@@ -103,8 +97,6 @@ class DataTableComponent extends Component{
             $conditions = $this->getWhereConditions();
 
             $this->controller->paginate = array_merge_recursive($this->controller->paginate, array('conditions'=>array('AND'=>$conditions)));
-            
-            $isFiltered = true;
         }
         
         $this->setTimes('Pre','stop');
@@ -114,14 +106,6 @@ class DataTableComponent extends Component{
         $this->model->recursive = -1;
         $parameters = $this->controller->paginate;
         $total = $this->model->find('count', array_merge($parameters, array('limit' => null)));
-        $this->setTimes('Count All','stop');
-        $this->setTimes('Filtered Count','start','Counts records that match conditions');
-        
-        if($isFiltered){
-            $filteredTotal = $this->model->find('count',$parameters);
-        }
-        $this->setTimes('Filtered Count','stop');
-        $this->setTimes('Find','start','Cake Find');
         
         // set sql limits
         if( isset($this->controller->request->query['iDisplayStart']) && $this->controller->request->query['iDisplayLength'] != '-1' ){
@@ -140,7 +124,7 @@ class DataTableComponent extends Component{
         $response = array(
             'sEcho' => isset($this->controller->request->query['sEcho']) ? intval($this->controller->request->query['sEcho']) : 1,
             'iTotalRecords' => $total,
-            'iTotalDisplayRecords' => $isFiltered === true ? $filteredTotal : $total,
+            'iTotalDisplayRecords' => $total,
             'aaData' => array()
         );
         
