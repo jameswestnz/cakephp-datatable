@@ -7,6 +7,8 @@ class DataTablesPaginatorComponent extends PaginatorComponent {
 		
 		$object = $this->_getObject($object);
 		
+		//pr($this->Controller->request->paging);
+		
         $response = array(
             'sEcho' => isset($this->Controller->request->query['sEcho']) ? intval($this->Controller->request->query['sEcho']) : 1,
             'iTotalRecords' => $this->Controller->request->paging[$object->name]['count'],
@@ -24,6 +26,10 @@ class DataTablesPaginatorComponent extends PaginatorComponent {
 		
 		if(isset($this->Controller->request->query['iDisplayLength'])) {
 			$options['limit'] = $this->Controller->request->query['iDisplayLength'];
+		}
+		
+		if(isset($this->Controller->request->query['iDisplayStart'])) {
+			$options['page'] = round($this->Controller->request->query['iDisplayStart'] / $options['limit']) + 1;
 		}
 		
 		return $options;
