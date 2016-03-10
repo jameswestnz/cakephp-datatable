@@ -22,6 +22,10 @@ class DataTablesPaginatorComponent extends PaginatorComponent {
 		
 		$options['conditions'] = array_merge($options['conditions'], $this->getWhereConditions());
 		
+		if(isset($this->Controller->request->query['iDisplayLength'])) {
+			$options['limit'] = $this->Controller->request->query['iDisplayLength'];
+		}
+		
 		return $options;
 	}
 
