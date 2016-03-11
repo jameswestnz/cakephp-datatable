@@ -1,13 +1,11 @@
 <?php
-App::uses('Component', 'PaginateComponent');
+App::uses('Component', 'PaginatorComponent');
 	
 class DataTablesPaginatorComponent extends PaginatorComponent {
 	public function paginate($object = null, $scope = array(), $whitelist = array()) {
 		$results = parent::paginate($object, $scope, $whitelist);
 		
 		$object = $this->_getObject($object);
-		
-		//pr($this->Controller->request->paging);
 		
         $response = array(
             'sEcho' => isset($this->Controller->request->query['sEcho']) ? intval($this->Controller->request->query['sEcho']) : 1,
@@ -21,6 +19,8 @@ class DataTablesPaginatorComponent extends PaginatorComponent {
 	
 	public function mergeOptions($alias) {
 		$options = parent::mergeOptions($alias);
+		
+		if(!isset($options['conditions'])) $options['conditions'] = array();
 		
 		$options['conditions'] = array_merge($options['conditions'], $this->getWhereConditions());
 		
